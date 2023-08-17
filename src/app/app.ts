@@ -1,4 +1,3 @@
-import { config } from '../config/config';
 import { Logger } from './common/logger';
 
 export class App {
@@ -16,7 +15,6 @@ export class App {
     Logger.logTask('APP', {
       develop: DEVELOP,
       version: VERSION,
-      config: config,
     });
   }
 }
