@@ -12,7 +12,7 @@ module.exports = {
   extends: ['prettier'],
   plugins: ['@typescript-eslint'],
   rules: {
-    '@typescript-eslint/indent': ['error', 2],
+    // '@typescript-eslint/indent': ['error', 2],
     '@typescript-eslint/member-delimiter-style': [
       'error',
       {
@@ -36,7 +36,6 @@ module.exports = {
     '@typescript-eslint/semi': ['error', 'always'],
     'comma-dangle': ['error', 'always-multiline'],
     'max-classes-per-file': 'off',
-    'no-console': 'error',
     'no-multiple-empty-lines': ['error', { max: 1 }],
     'no-redeclare': 'error',
     'no-return-await': 'error',

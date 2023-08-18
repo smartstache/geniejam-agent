@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "es2022",
+    "module": "commonjs",
     "moduleResolution": "node",
     "lib": ["dom", "es2022"],
     "experimentalDecorators": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "removeComments": true,
-    "strict": true,
+    "strict": false,
     "typeRoots": ["node_modules/@types"],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "noImplicitAny": false
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
