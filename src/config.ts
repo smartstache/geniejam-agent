@@ -11,6 +11,8 @@ const anchor = require('@project-serum/anchor');
 export const AUTHORITY: Keypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(
     JSON.parse(fs.readFileSync(process.env.WALLET))));
 
+export const openaiKey = process.env.OPENAI_KEY as string;
+
 const rpcUrl = process.env.RPC_URL as string;
 console.log(`should be a DAS-supported endpoint (like helius): ${rpcUrl}`);
 

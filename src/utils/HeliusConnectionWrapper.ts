@@ -1,9 +1,9 @@
-import {Commitment, Connection, ConnectionConfig, PublicKey} from "@solana/web3.js";
+import {Commitment, Connection, ConnectionConfig, Keypair, PublicKey} from '@solana/web3.js';
 
-import {TokenStandard} from "@metaplex-foundation/mpl-token-metadata";
-import {PROGRAM_ID as BUBBLEGUM_PROGRAM_ID} from "@metaplex-foundation/mpl-bubblegum";
+import {TokenStandard} from '@metaplex-foundation/mpl-token-metadata';
+import {PROGRAM_ID as BUBBLEGUM_PROGRAM_ID} from '@metaplex-foundation/mpl-bubblegum';
 
-import type {Metadata, Mint, NftOriginalEdition, SplTokenCurrency} from "@metaplex-foundation/js";
+import type {Metadata, Mint, NftOriginalEdition, SplTokenCurrency} from '@metaplex-foundation/js';
 // import from the `@metaplex-foundation/js`
 import {
   amount,
@@ -17,10 +17,11 @@ import {
   ReadApiAsset,
   ReadApiAssetList,
   toBigNumber
-} from "@metaplex-foundation/js";
+} from '@metaplex-foundation/js';
 
-import axios from "axios";
-import {BN} from "@project-serum/anchor";
+import axios from 'axios';
+import {BN, Wallet} from '@project-serum/anchor';
+import { createTransferAssetTx } from './compression-utils';
 
 type JsonRpcParams<ReadApiMethodParams> = {
   method: string;
@@ -34,10 +35,10 @@ type JsonRpcOutput<ReadApiJsonOutput> = {
 
 /** @group Errors */
 export class ReadApiError extends MetaplexError {
-  readonly name: string = "ReadApiError";
+  readonly name: string = 'ReadApiError';
 
   constructor(message: string, cause?: Error) {
-    super(message, "rpc", undefined, cause);
+    super(message, 'rpc', undefined, cause);
   }
 }
 
@@ -46,7 +47,7 @@ export class ReadApiError extends MetaplexError {
  */
 export const toNftEditionFromReadApiAsset = (input: ReadApiAsset): NftOriginalEdition => {
   return {
-    model: "nftEdition",
+    model: 'nftEdition',
     isOriginal: true,
     address: new PublicKey(input.id),
     supply: toBigNumber(input.supply.print_current_supply),
@@ -59,13 +60,13 @@ export const toNftEditionFromReadApiAsset = (input: ReadApiAsset): NftOriginalEd
  */
 export const toMintFromReadApiAsset = (input: ReadApiAsset): Mint => {
   const currency: SplTokenCurrency = {
-    symbol: "Token",
+    symbol: 'Token',
     decimals: 0,
-    namespace: "spl-token",
+    namespace: 'spl-token',
   };
 
   return {
-    model: "mint",
+    model: 'mint',
     address: new PublicKey(input.id),
     mintAuthorityAddress: new PublicKey(input.id),
     freezeAuthorityAddress: new PublicKey(input.id),
@@ -87,26 +88,26 @@ const HEADERS = {
  * Convert a ReadApi asset's data into standard Metaplex `Metadata`
  */
 export const toMetadataFromReadApiAsset = (input: ReadApiAsset): Metadata => {
-  const updateAuthority = input.authorities?.find(authority => authority.scopes.includes("full"));
+  const updateAuthority = input.authorities?.find(authority => authority.scopes.includes('full'));
 
-  const collection = input.grouping.find(({group_key}) => group_key === "collection");
+  const collection = input.grouping.find(({group_key}) => group_key === 'collection');
 
   return {
-    model: "metadata",
+    model: 'metadata',
     /**
      * We technically don't have a metadata address anymore.
      * So we are using the asset's id as the address
      */
     address: Pda.find(BUBBLEGUM_PROGRAM_ID, [
-      Buffer.from("asset", "utf-8"),
+      Buffer.from('asset', 'utf-8'),
       new PublicKey(input.compression.tree).toBuffer(),
-      Uint8Array.from(new BN(input.compression.leaf_id).toArray("le", 8)),
+      Uint8Array.from(new BN(input.compression.leaf_id).toArray('le', 8)),
     ]),
     mintAddress: new PublicKey(input.id),
     updateAuthorityAddress: new PublicKey(updateAuthority!.address),
 
-    name: input.content.metadata?.name ?? "",
-    symbol: input.content.metadata?.symbol ?? "",
+    name: input.content.metadata?.name ?? '',
+    symbol: input.content.metadata?.symbol ?? '',
 
     json: input.content.metadata,
     jsonLoaded: true,
@@ -143,20 +144,28 @@ export const toMetadataFromReadApiAsset = (input: ReadApiAsset): Metadata => {
  * for state compression and compressed NFTs
  */
 export class HeliusConnectionWrapper extends Connection {
+
   constructor(endpoint: string, commitmentOrConfig?: Commitment | ConnectionConfig) {
     super(endpoint, commitmentOrConfig);
+  }
+
+
+  async transferCompressed(sender: Keypair, assetId: PublicKey, fromAddress: PublicKey, toAddress: PublicKey): Promise<void> {
+    const tx = await createTransferAssetTx(this, fromAddress, toAddress, assetId.toBase58());
+    const txid = await this.sendTransaction(tx, [sender]);
+    console.log(`transferCompressed txid: ${txid}`);
   }
 
   // It is a PDA with the following seeds: ["asset", tree, leafIndex]
   async getAsset(assetId: string): Promise<ReadApiAsset> {
     const {result: asset} = await this.callReadApi<GetAssetRpcInput, ReadApiAsset>({
-      method: "getAsset",
+      method: 'getAsset',
       params: {
         id: assetId,
       },
     });
 
-    if (!asset) throw new ReadApiError("No asset returned");
+    if (!asset) throw new ReadApiError('No asset returned');
 
     return asset;
   }
@@ -169,13 +178,13 @@ export class HeliusConnectionWrapper extends Connection {
         GetAssetProofRpcInput,
         GetAssetProofRpcResponse
     >({
-      method: "getAssetProof",
+      method: 'getAssetProof',
       params: {
         id: assetId,
       },
     });
 
-    if (!proof) throw new ReadApiError("No asset proof returned");
+    if (!proof) throw new ReadApiError('No asset proof returned');
 
     return proof;
   }
@@ -193,15 +202,15 @@ export class HeliusConnectionWrapper extends Connection {
                            after,
                          }: GetAssetsByGroupRpcInput): Promise<ReadApiAssetList> {
     // `page` cannot be supplied with `before` or `after`
-    if (typeof page == "number" && (before || after))
+    if (typeof page == 'number' && (before || after))
       throw new ReadApiError(
-          "Pagination Error. Only one pagination parameter supported per query.",
+          'Pagination Error. Only one pagination parameter supported per query.',
       );
 
     // a pagination method MUST be selected, but we are defaulting to using `page=0`
 
     const {result} = await this.callReadApi<GetAssetsByGroupRpcInput, ReadApiAssetList>({
-      method: "getAssetsByGroup",
+      method: 'getAssetsByGroup',
       params: {
         groupKey,
         groupValue,
@@ -213,7 +222,7 @@ export class HeliusConnectionWrapper extends Connection {
       },
     });
 
-    if (!result) throw new ReadApiError("No results returned");
+    if (!result) throw new ReadApiError('No results returned');
 
     return result;
   }
@@ -228,15 +237,15 @@ export class HeliusConnectionWrapper extends Connection {
                            after,
                          }: GetAssetsByOwnerRpcInput): Promise<ReadApiAssetList> {
     // `page` cannot be supplied with `before` or `after`
-    if (typeof page == "number" && (before || after))
+    if (typeof page == 'number' && (before || after))
       throw new ReadApiError(
-          "Pagination Error. Only one pagination parameter supported per query.",
+          'Pagination Error. Only one pagination parameter supported per query.',
       );
 
     // a pagination method MUST be selected, but we are defaulting to using `page=0`
 
     const {result} = await this.callReadApi<GetAssetsByOwnerRpcInput, ReadApiAssetList>({
-      method: "getAssetsByOwner",
+      method: 'getAssetsByOwner',
       params: {
         ownerAddress,
         after: after ?? null,
@@ -247,7 +256,7 @@ export class HeliusConnectionWrapper extends Connection {
       },
     });
 
-    if (!result) throw new ReadApiError("No results returned");
+    if (!result) throw new ReadApiError('No results returned');
     return result;
   }
 
@@ -256,9 +265,9 @@ export class HeliusConnectionWrapper extends Connection {
   ): Promise<JsonRpcOutput<ReadApiJsonOutput>> => {
 
     let resp = await axios.post(this.rpcEndpoint, {
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       method: jsonRpcParams.method,
-      id: jsonRpcParams.id ?? "rpd-op-123",
+      id: jsonRpcParams.id ?? 'rpd-op-123',
       params: jsonRpcParams.params,
     }, HEADERS);
 
@@ -266,8 +275,8 @@ export class HeliusConnectionWrapper extends Connection {
       // will return an object w/result field which is a "page" object with total, limit, page, items
       return await resp.data;
     } else {
-      console.log('problem fetching assets. status: ' + resp.status + ": " + resp);
-      throw new Error("problem fetching assets. status: " + resp.status);
+      console.log('problem fetching assets. status: ' + resp.status + ': ' + resp);
+      throw new Error('problem fetching assets. status: ' + resp.status);
     }
   };
 }
