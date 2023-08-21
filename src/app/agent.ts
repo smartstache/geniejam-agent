@@ -46,6 +46,7 @@ export class Agent {
   private openaiKey: string;
   private openai: any;
   private crossmintCollection: string;
+  private storageAddress: PublicKey;
 
   static async run(): Promise<void> {
     const agent = new Agent();
@@ -58,6 +59,7 @@ export class Agent {
     this.openaiKey = openaiKey;
     this.openai = new OpenAI({apiKey: this.openaiKey});
     this.crossmintCollection = crossmintCollection;
+    this.storageAddress = new PublicKey(process.env.STORAGE_ADDRESS);
   }
 
   private async init(){
@@ -92,12 +94,17 @@ export class Agent {
   }
 
   private async burnRequest(taskRequest: TaskRequest) {
-    const txid = await burnAsset(heliusConnection, this.taskWallet, taskRequest.requestAssetId);
-    Logger.log(`burned task request asset ${taskRequest.requestAssetId} with txid ${txid}`);
+    // gettin issues w/trying to burn
+    // const txid = await burnAsset(heliusConnection, this.taskWallet, taskRequest.requestAssetId);
+    // Logger.log(`burned task request asset ${taskRequest.requestAssetId} with txid ${txid}`);
 
-    // or transfer it out
-    // const tx = await createTransferAssetTx(heliusConnection, this.taskWallet.publicKey,
-    //     new PublicKey('storage-address'), taskRequest.requestAssetId);
+    // transfer it out
+    const txid = await heliusConnection.transferCompressed(
+          this.taskWallet,
+          new PublicKey(taskRequest.requestAssetId),
+          this.taskWallet.publicKey,
+          this.storageAddress);
+    Logger.log(`transferred task request asset ${taskRequest.requestAssetId} to storage with txid ${txid}`);
 
   }
 
