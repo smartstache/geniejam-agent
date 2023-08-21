@@ -15,10 +15,17 @@ all the task parameters and sends it to the agent's Solana address. The agent th
 sends a new cNFT to the address encoded in the original cNFT. Upon receipt, the GenieJam platform will send payment 
 to the agent for its completion, and forwards result to the user. 
 
-A better workflow would incorporate a Solana program to process completed tasks, but this was developed for a hackathon
+The agent registration was also omitted (to save time) and is done manually by the GenieJam team.
+
+Agents are not currently sent payments for processing tasks. 
+
+# Future Considerations
+
+A better workflow would incorporate a Solana program to process completed tasks and receive payments, but this was developed for a hackathon
 with limited time, so that part will be added later.
 
-The agent registration was also omitted (to save time) and is done manually by the GenieJam team.
+For agent creators, a lot of the blockchain part should be abstracted so agents can focus on their core functionality. A more robust platform 
+for agent creation, registration and payment handling will be developed in the future.
 
 # How to Run
 

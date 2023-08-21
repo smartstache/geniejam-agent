@@ -1,8 +1,8 @@
 import { Logger } from './common/logger';
-import {heliusConnection, getCrossmintUrl, requestConfig, AUTHORITY} from "../config";
+import {heliusConnection, getCrossmintUrl, requestConfig, TASK_WALLET} from "../config";
 import axios from 'axios';
-import {ReadApiAsset, ReadApiAssetList} from "@metaplex-foundation/js";
-import {getCollectionId} from "../utils/compression-utils";
+import {PublicKey, ReadApiAsset, ReadApiAssetList} from "@metaplex-foundation/js";
+import {burnAsset} from "../utils/compression-utils";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -17,38 +17,45 @@ export class App {
       app.mintcNFT();
       app.getMintStatus();
       app.getCompressedNfts();
+      app.transferAll('');
     }
     // const id = await app.mintcNFT();
     // await sleep(4000);
     // app.getMintStatus(id);
     await app.getCompressedNfts();
+    // await app.transferAll('7YwD2AWhWU74uqG3HU3w1iRdJms3KPWM1hBd7rvQamVR');
     return app;
   }
 
   private start(): void {
   }
 
-  private async getCompressedNfts(): Promise<void> {
-    const assetList: ReadApiAssetList = await heliusConnection.getAssetsByOwner({ownerAddress: AUTHORITY.publicKey.toBase58()});
+  private async transferAll(to: string): Promise<void> {
+    const toAddress = new PublicKey(to);
+    const assets: ReadApiAsset[] = await this.getCompressedNfts();
+    console.log(`transferring ${assets.length} assets...`);
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i];
+      await heliusConnection.transferCompressed(TASK_WALLET, new PublicKey(asset.id), TASK_WALLET.publicKey, toAddress);
+      console.log(`transfered ${asset.id} to ${to}`);
+    }
+  }
 
-    const collectionIds = new Map<string, Promise<ReadApiAsset>>();
+  private async getCompressedNfts(): Promise<ReadApiAsset[]> {
+    const assetList: ReadApiAssetList = await heliusConnection.getAssetsByOwner({ownerAddress: TASK_WALLET.publicKey.toBase58()});
+
     const compressedAssets: ReadApiAsset[] = [];
     for (let i = 0; i < assetList.items.length; i++) {
       const asset = assetList.items[i];
       if (asset.compression.compressed) {
-        const collectionId = getCollectionId(asset);
-        if (collectionId && !collectionIds.has(collectionId)) {
-          collectionIds.set(collectionId, heliusConnection.getAsset(collectionId));
-        }
         compressedAssets.push(asset);
       }
     }
 
     console.log(`found ${compressedAssets.length} compressed assets`);
-    console.log(`found ${collectionIds.size} collections`);
     // console.log(`assets: `, compressedAssets.map(a => {return {id: a.id, content: a.content, metadata: a.content.metadata, attributes: a.content.metadata?.attributes}}));
     console.dir(compressedAssets, {depth: null});
-    console.log(`collections: `, collectionIds.keys());
+    return compressedAssets;
   }
 
   private async createCollection(): Promise<void> {

@@ -26,17 +26,17 @@ module.exports = {
         },
       },
     ],
-    '@typescript-eslint/quotes': [
-      'error',
-      'single',
-      {
-        avoidEscape: true,
-      },
-    ],
+    // '@typescript-eslint/quotes': [
+    //   'error',
+    //   'single',
+    //   {
+    //     avoidEscape: true,
+    //   },
+    // ],
     '@typescript-eslint/semi': ['error', 'always'],
     'comma-dangle': ['error', 'always-multiline'],
     'max-classes-per-file': 'off',
-    'no-multiple-empty-lines': ['error', { max: 1 }],
+    // 'no-multiple-empty-lines': ['error', { max: 1 }],
     'no-redeclare': 'error',
     'no-return-await': 'error',
     'prefer-const': 'error',

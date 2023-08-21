@@ -8,8 +8,8 @@ const { LAMPORTS_PER_SOL} = require('@solana/web3.js');
 const fs = require("fs");
 const anchor = require('@project-serum/anchor');
 
-export const AUTHORITY: Keypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(
-    JSON.parse(fs.readFileSync(process.env.WALLET))));
+export const TASK_WALLET: Keypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(
+    JSON.parse(fs.readFileSync(process.env.TASK_WALLET))));
 
 export const openaiKey = process.env.OPENAI_KEY as string;
 
@@ -18,19 +18,9 @@ console.log(`should be a DAS-supported endpoint (like helius): ${rpcUrl}`);
 
 export const heliusConnection = new HeliusConnectionWrapper(rpcUrl);
 
-// export const connection: HeliusConnectionWrapper = new HeliusConnectionWrapper(rpcUrl, {
-//    commitment: "finalized",
-//    confirmTransactionInitialTimeout: CONFIRM_TIMEOUT_MILLIS
-// });
-
-// export const provider = new AnchorProvider(connection, new Wallet(AUTHORITY), {
-//    commitment: 'processed',
-//    preflightCommitment: 'processed',
-// });
-
 export async function printConfig() {
-   let authWalletBalance = await heliusConnection.getBalance(AUTHORITY.publicKey);
-   console.log(`authority wallet ${AUTHORITY.publicKey.toBase58()} balance: ${authWalletBalance / LAMPORTS_PER_SOL} SOL`);
+   let authWalletBalance = await heliusConnection.getBalance(TASK_WALLET.publicKey);
+   console.log(`authority wallet ${TASK_WALLET.publicKey.toBase58()} balance: ${authWalletBalance / LAMPORTS_PER_SOL} SOL`);
 }
 
 export function getCrossmintUrl(path: string): string {
