@@ -92,8 +92,8 @@ export class Agent {
   }
 
   private async burnRequest(taskRequest: TaskRequest) {
-    // const txid = await burnAsset(heliusConnection, this.taskWallet, taskRequest.requestAssetId);
-    // Logger.log(`burned task request asset ${taskRequest.requestAssetId} with txid ${txid}`);
+    const txid = await burnAsset(heliusConnection, this.taskWallet, taskRequest.requestAssetId);
+    Logger.log(`burned task request asset ${taskRequest.requestAssetId} with txid ${txid}`);
 
     // or transfer it out
     // const tx = await createTransferAssetTx(heliusConnection, this.taskWallet.publicKey,
