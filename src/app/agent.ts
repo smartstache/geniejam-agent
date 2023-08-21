@@ -65,12 +65,12 @@ export class Agent {
   }
 
   private async start(): Promise<void> {
-    await this.checkAndProcessTasks();
+    // await this.checkAndProcessTasks();
     // wake up every 30 seconds to check for new task request to process
-    // while(true) {
-    //   await this.checkAndProcessTasks();
-    //   await sleep(30000);
-    // }
+    while(true) {
+      await this.checkAndProcessTasks();
+      await sleep(30000);
+    }
   }
 
   private async checkAndProcessTasks() {
