@@ -27,7 +27,9 @@ export function getCrossmintUrl(path: string): string {
    return `https://${process.env.CROSSMINT_ENV}.crossmint.com${path}`;
 }
 
-export const requestConfig: any = {
+export const crossmintCollection = process.env.CROSSMINT_COLLECTION as string;
+
+export const crossmintRequestConfig: any = {
       headers: {
         'Content-Type': 'application/json',
         'x-client-secret': process.env.CROSSMINT_SECRET,

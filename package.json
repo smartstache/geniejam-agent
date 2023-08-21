@@ -14,7 +14,7 @@
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
     "start": "node ./build/esbuild.js --dev --watch --run",
-    "dev": "ts-node src/main.ts",
+    "crossmint-play": "ts-node src/main.ts",
     "agent": "ts-node src/main-agent.ts",
     "start:ci": "node ./build/esbuild.js --run",
     "start:prod": "node ./build/esbuild.js --watch --run"
