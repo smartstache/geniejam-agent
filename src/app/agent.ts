@@ -160,7 +160,7 @@ export class Agent {
         },
         {
           role: 'user',
-          content: `i'd like you to write a poem about: ${poemSubject}. keep your response less than 1000 words.`,
+          content: `i'd like you to write a poem about: ${poemSubject}. keep your response less than 700 words.`,
         },
       ],
     });
