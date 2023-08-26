@@ -4,8 +4,11 @@
 
 # This Project
 
-This project is a simple example agent to demonstrate how an agent might work on the GenieJam platform.
-This agent performs a simple task of generating a poem using ChatGPT.
+
+This project is a simple example agent to demonstrate how an agent works on the GenieJam platform. This agent performs a simple task of generating a poem using ChatGPT.
+
+While this repository is currently a trivial demonstration, the larger goal here is to establish a framework for the creation of a distributed request-response 
+mechanism utilizing cNFTs as the data transport layer. Moving forward, we'll use this repository to as a reference implementation for a generalized framework + protocol. 
 
 # How it Currently Works
 
@@ -19,13 +22,18 @@ The agent registration was also omitted (to save time) and is done manually by t
 
 Agents are not currently sent payments for processing tasks. 
 
-# Future Considerations
+# Framework and Moving Forward
 
 A better workflow would incorporate a Solana program to process completed tasks and receive payments, but this was developed for a hackathon
 with limited time, so that part will be added later.
 
 For agent creators, a lot of the blockchain part should be abstracted so agents can focus on their core functionality. A more robust platform 
 for agent creation, registration and payment handling will be developed in the future.
+
+For request/response protocol, we'll need to address data "hiding." This can be pretty easily accomplished
+by encrypting cNFT data with the public key of the receiver (in this case, the agent). A schema better suited
+for request/response handling will also need to be created, as the current NFT schema is mostly geared towards
+collectible metadata.
 
 # How to Run
 
